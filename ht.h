@@ -314,6 +314,7 @@ HashTable<K,V,Prober,Hash,KEqual>::~HashTable()
       delete table_[i];
     }
   }
+  table_.clear();
   size_ = 0;
 }
 
@@ -469,6 +470,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::resize()
       }
       else {
         insert(old_table[i]->item);
+        delete old_table[i];
         size_++;
       }
     }
