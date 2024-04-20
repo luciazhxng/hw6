@@ -22,6 +22,7 @@ int main()
     for(size_t i = 0; i < 10; i++){
         std::stringstream ss;
         ss << "hi" << i;
+        // std::cout << "Calling insert() for " << i << std::endl;
         ht.insert({ss.str(), i});
     }
     if( ht.find("hi1") != nullptr ){

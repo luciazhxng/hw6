@@ -91,9 +91,61 @@ std::set<std::string> boggle(const std::set<std::string>& dict, const std::set<s
 	return result;
 }
 
-bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>& prefix, const std::vector<std::vector<char> >& board, 
-								   std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
+bool boggleHelper(const std::set<std::string>& dict, 
+  const std::set<std::string>& prefix, 
+  const std::vector<std::vector<char> >& board, 
+  std::string word, 
+  std::set<std::string>& result, 
+  unsigned int r, 
+  unsigned int c, 
+  int dr, 
+  int dc)
 {
-//add your solution here!
+  /*
+  if row or column out of bounds, return true
+  add letter in r, c to word
+  if word is in prefix
+    if boggleHelper(in direction of dr, dc, word)
+      return true
+  if word is not in prefix and not in dictionary, return false
+  if word is not in prefix and in dictionary, return false
 
+  */
+
+  // ACCOUNT FOR PREFIXES THAT ARE THE LONGEST WORD
+  
+  std::cout << "r: " << r << std::endl;
+  std::cout << "c: " << c << std::endl;
+  if(r >= board.size() || c >= board.size()) {
+    return false;
+  }
+  word = word + board[r][c];
+  std::cout << "word: " << word << std::endl;
+
+  if(prefix.find(word) == prefix.end() && dict.find(word) == dict.end()) {
+    std::cout << "word is not a prefix and not in dictionary" << std::endl;
+    return false;
+  }
+
+  if(prefix.find(word) == prefix.end() && dict.find(word) != dict.end()) {
+    std::cout << "word is not a prefix and is in dictionary" << std::endl;
+    result.insert(word);
+    std::cout << "insert " << word << std::endl; 
+    return true;
+  }
+  if(prefix.find(word) != prefix.end()) {
+    std::cout << "word is a prefix" << std::endl;
+    if(!boggleHelper(dict, prefix, board, word, result, r + dr, c + dc, dr, dc)) {
+      if(dict.find(word) != dict.end()) {
+        result.insert(word);
+        std::cout << "insert " << word << std::endl; 
+        return true;
+      }
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  return false;
 }

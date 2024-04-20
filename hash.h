@@ -5,6 +5,10 @@
 #include <cmath>
 #include <random>
 #include <chrono>
+#include <ctime>
+#include <cstdlib>
+#include <cctype>
+#include <vector>
 
 typedef std::size_t HASH_INDEX_T;
 
@@ -19,15 +23,43 @@ struct MyStringHash {
     // hash function entry point (i.e. this is h(k))
     HASH_INDEX_T operator()(const std::string& k) const
     {
-        // Add your code here
-
-
+        std::vector<HASH_INDEX_T> mapping; 
+        std::vector<unsigned long long> w;
+        for(int i = 0; i < k.size(); i++) {
+            mapping.push_back(letterDigitToNumber(k[i]));
+        }
+        for(int i = mapping.size() - 1; i >= 0; i -= 6) {
+            unsigned long long wi = 0;
+            for(int j = i - 5; j <= i; j++) {
+                if(j < 0) {
+                    continue;
+                }
+                wi = (wi * 36 + mapping[j]);
+            }
+            
+            w.push_back(wi);
+        }
+        for(int i = 0; i < w.size(); i++) {
+        }
+        HASH_INDEX_T result = 0;
+        int w_ind = w.size() - 1;
+        for(int i =  5 - w.size(); i < 5; i++) {
+            result = result + rValues[i] * w[w_ind];
+            w_ind--;
+        }
+        return result; 
     }
 
     // A likely helper function is to convert a-z,0-9 to an integral value 0-35
     HASH_INDEX_T letterDigitToNumber(char letter) const
-    {
-        // Add code here or delete this helper function if you do not want it
+    {   
+        if(isdigit(letter)) {
+            return letter - '0' + 26;
+        }
+        else if (isalpha(letter)) {
+            return tolower(letter) - 'a';
+        }
+        return 0;
 
     }
 
