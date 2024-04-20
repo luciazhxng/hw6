@@ -183,7 +183,7 @@ public:
      * 
      * @return size_t 
      */
-    size_t size() const;
+    size_t size();
 
     /**
      * @brief Inserts a new item into the map, or, if an item with the
@@ -277,6 +277,7 @@ private:
 
     // ADD MORE DATA MEMBERS HERE, AS NECESSARY
     double alpha_;
+    double size_;
 };
 
 // ----------------------------------------------------------------------------
@@ -300,6 +301,7 @@ HashTable<K,V,Prober,Hash,KEqual>::HashTable(
 {
   alpha_ = resizeAlpha;
   mIndex_ = 0;
+  size_ = 0;
   table_ = std::vector<HashItem*>(CAPACITIES[mIndex_]);
 }
 
@@ -312,25 +314,26 @@ HashTable<K,V,Prober,Hash,KEqual>::~HashTable()
       delete table_[i];
     }
   }
+  size_ = 0;
 }
 
 // To be completed
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 {
-  for(size_t i = 0; i < table_.size(); i++) {
-    if(table_[i] != NULL && table_[i]->deleted == false) {
-      return false;
-    }
-  }
-  return true;
+  // for(size_t i = 0; i < table_.size(); i++) {
+  //   if(table_[i] != NULL && table_[i]->deleted == false) {
+  //     return false;
+  //   }
+  // }
+  return size_ == 0;
 }
 
 // To be completed
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
-size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
+size_t HashTable<K,V,Prober,Hash,KEqual>::size() 
 {
-  size_t size_ = 0;
+  size_ = 0;
   for(size_t i = 0; i < table_.size(); i++) {
     if(table_[i] != NULL && table_[i]->deleted == false) {
       size_++;
@@ -344,7 +347,7 @@ template<typename K, typename V, typename Prober, typename Hash, typename KEqual
 void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 {
   // std::cout << "Running insert for " << p.first << std::endl;
-  if(double(size())/CAPACITIES[mIndex_] >= alpha_) {
+  if(size_/CAPACITIES[mIndex_] >= alpha_) {
     // std::cout << "Resizing" << std::endl;
     resize();
   }
@@ -359,6 +362,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
   if(probe(p.first) != npos) {
     HASH_INDEX_T index = probe(p.first);
     table_[index] = new HashItem(p);
+    size_++;
     // std::cout << "New key inserted" << std::endl;
     return;
   }
@@ -369,11 +373,15 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::remove(const KeyType& key)
 {
+  // std::cout << "Running remove for " << key << std::endl;
   if(internalFind(key) != nullptr) {
     HashItem* item = internalFind(key);
     item->deleted = true;
+    size_--;
+    // std::cout << "Find for " << key << " is " << find(key) << std::endl;
     return;
   }
+  
   return;
 
 }
@@ -449,7 +457,9 @@ typename HashTable<K,V,Prober,Hash,KEqual>::HashItem* HashTable<K,V,Prober,Hash,
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
+  size_ = 0;
   mIndex_++;
+  std::cout << "resize the table to " << CAPACITIES[mIndex_] << std::endl;
   std::vector<HashItem*> old_table = table_;
   table_ = std::vector<HashItem*>(CAPACITIES[mIndex_]);
   for(size_t i = 0; i < old_table.size(); i++) {
@@ -459,9 +469,11 @@ void HashTable<K,V,Prober,Hash,KEqual>::resize()
       }
       else {
         insert(old_table[i]->item);
+        size_++;
       }
     }
   }
+  std::cout <<"size is " << size_ << std::endl;
     
 }
 
@@ -482,7 +494,7 @@ HASH_INDEX_T HashTable<K,V,Prober,Hash,KEqual>::probe(const KeyType& key) const
       }
       // fill in the condition for this else if statement which should 
       // return 'loc' if the given key exists at this location
-      else if(table_[loc]->item.first == key) {
+      else if(table_[loc]->item.first == key && table_[loc]->deleted == false) {
           return loc;
       }
       loc = prober_.next();
